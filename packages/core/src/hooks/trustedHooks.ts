@@ -14,10 +14,7 @@ import {
   type HookEventName,
 } from './types.js';
 import { debugLogger } from '../utils/debugLogger.js';
-import {
-  TrustedHooksConfigSchema,
-  loadAndValidateConfigSync,
-} from '../config/schemas/index.js';
+import { TrustedHooksConfigSchema } from '../config/schemas/index.js';
 
 interface TrustedHooksConfig {
   [projectPath: string]: string[]; // Array of trusted hook keys (name:command)

@@ -9,10 +9,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { lock } from 'proper-lockfile';
 import { debugLogger } from '../utils/debugLogger.js';
-import {
-  ProjectRegistrySchema,
-  loadAndValidateConfigSync,
-} from './schemas/index.js';
+import { ProjectRegistrySchema } from './schemas/index.js';
 
 export interface RegistryData {
   projects: Record<string, string>;
