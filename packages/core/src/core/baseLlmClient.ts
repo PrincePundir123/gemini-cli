@@ -136,7 +136,11 @@ export class BaseLlmClient {
       }
       try {
         // We don't use the result, just check if it's valid JSON
-        JSON.parse(this.cleanJsonResponse(text, model));
+        const cleanedText = this.cleanJsonResponse(text, model);
+        if (!cleanedText) {
+          return true;
+        }
+        JSON.parse(cleanedText);
         return false; // It's valid, don't retry
       } catch (_e) {
         return true; // It's not valid, retry
@@ -162,10 +166,17 @@ export class BaseLlmClient {
     );
 
     // If we are here, the content is valid (not empty and parsable).
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return JSON.parse(
-      this.cleanJsonResponse(getResponseText(result)!.trim(), model),
-    );
+    const text = getResponseText(result)!.trim();
+    const cleanedText = this.cleanJsonResponse(text, model);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return JSON.parse(cleanedText);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to parse JSON response from model ${model}: ${errorMsg}. Response: ${cleanedText.substring(0, 200)}...`,
+      );
+    }
   }
 
   async generateEmbedding(texts: string[]): Promise<number[][]> {

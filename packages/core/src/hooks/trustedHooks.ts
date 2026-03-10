@@ -14,6 +14,10 @@ import {
   type HookEventName,
 } from './types.js';
 import { debugLogger } from '../utils/debugLogger.js';
+import {
+  TrustedHooksConfigSchema,
+  loadAndValidateConfigSync,
+} from '../config/schemas/index.js';
 
 interface TrustedHooksConfig {
   [projectPath: string]: string[]; // Array of trusted hook keys (name:command)
@@ -35,11 +39,16 @@ export class TrustedHooksManager {
     try {
       if (fs.existsSync(this.configPath)) {
         const content = fs.readFileSync(this.configPath, 'utf-8');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this.trustedHooks = JSON.parse(content);
+        const parsed = JSON.parse(content);
+        this.trustedHooks = TrustedHooksConfigSchema.parse(parsed);
       }
     } catch (error) {
-      debugLogger.warn('Failed to load trusted hooks config', error);
+      debugLogger.error('Failed to load trusted hooks config', {
+        filePath: this.configPath,
+        error: error instanceof Error ? error.message : String(error),
+        expectedStructure:
+          'Object mapping project paths to arrays of trusted hook keys',
+      });
       this.trustedHooks = {};
     }
   }

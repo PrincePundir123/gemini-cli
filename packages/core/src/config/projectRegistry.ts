@@ -9,6 +9,10 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { lock } from 'proper-lockfile';
 import { debugLogger } from '../utils/debugLogger.js';
+import {
+  ProjectRegistrySchema,
+  loadAndValidateConfigSync,
+} from './schemas/index.js';
 
 export interface RegistryData {
   projects: Record<string, string>;
@@ -59,10 +63,15 @@ export class ProjectRegistry {
 
     try {
       const content = await fs.promises.readFile(this.registryPath, 'utf8');
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      const validated = ProjectRegistrySchema.parse(parsed);
+      return validated;
     } catch (e) {
-      debugLogger.debug('Failed to load registry: ', e);
+      debugLogger.error('Failed to load project registry', {
+        filePath: this.registryPath,
+        error: e instanceof Error ? e.message : String(e),
+        expectedStructure: 'Object with projects property mapping strings to strings',
+      });
       // If the registry is corrupted, we'll start fresh to avoid blocking the CLI
       return { projects: {} };
     }
