@@ -60,14 +60,15 @@ export class ProjectRegistry {
 
     try {
       const content = await fs.promises.readFile(this.registryPath, 'utf8');
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(content) as unknown;
       const validated = ProjectRegistrySchema.parse(parsed);
-      return validated;
+      return validated as RegistryData;
     } catch (e) {
       debugLogger.error('Failed to load project registry', {
         filePath: this.registryPath,
         error: e instanceof Error ? e.message : String(e),
-        expectedStructure: 'Object with projects property mapping strings to strings',
+        expectedStructure:
+          'Object with projects property mapping strings to strings',
       });
       // If the registry is corrupted, we'll start fresh to avoid blocking the CLI
       return { projects: {} };

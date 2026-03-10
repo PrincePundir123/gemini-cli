@@ -14,11 +14,10 @@ import {
   type HookEventName,
 } from './types.js';
 import { debugLogger } from '../utils/debugLogger.js';
-import { TrustedHooksConfigSchema } from '../config/schemas/index.js';
-
-interface TrustedHooksConfig {
-  [projectPath: string]: string[]; // Array of trusted hook keys (name:command)
-}
+import {
+  TrustedHooksConfigSchema,
+  type TrustedHooksConfig,
+} from '../config/schemas/index.js';
 
 export class TrustedHooksManager {
   private configPath: string;
@@ -36,7 +35,7 @@ export class TrustedHooksManager {
     try {
       if (fs.existsSync(this.configPath)) {
         const content = fs.readFileSync(this.configPath, 'utf-8');
-        const parsed = JSON.parse(content);
+        const parsed = JSON.parse(content) as unknown;
         this.trustedHooks = TrustedHooksConfigSchema.parse(parsed);
       }
     } catch (error) {
